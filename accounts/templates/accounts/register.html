@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-art">
+    <img src="{% static 'img/rider-hero.svg' %}" alt="Rider on a motorbike protected by a shield">
+    <h2>Join RiderGuard</h2>
+    <p class="muted">Log your trips, check your fares and keep your dispute evidence in one place.</p>
+  </div>
+  <div class="auth-form">
+    <h1>Create your account</h1>
+    <p class="muted">Fields marked * are required.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      <div class="grid grid-2" style="gap:0 16px">
+        {% include "partials/field.html" with field=form.first_name %}
+        {% include "partials/field.html" with field=form.last_name %}
+      </div>
+      {% include "partials/field.html" with field=form.username %}
+      {% include "partials/field.html" with field=form.email %}
+      {% include "partials/field.html" with field=form.contact_number %}
+      {% include "partials/field.html" with field=form.platforms %}
+      {% include "partials/field.html" with field=form.password1 %}
+      {% include "partials/field.html" with field=form.password2 %}
+      <button type="submit" class="btn btn-block">Create account</button>
+    </form>
+    {% block auth_switch %}{% endblock %}
+  </div>
+</div>
+{% endblock %}
