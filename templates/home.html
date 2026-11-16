@@ -8,7 +8,14 @@
     <p class="muted">RiderGuard helps ride-hailing and delivery riders on Maxim, MoveIt and Grab
       check their pay against published commission rates and organize evidence for unfair
       cancellations and deactivations.</p>
-    {% block hero_actions %}{% endblock %}
+    <div class="hero-actions">
+      {% if user.is_authenticated %}
+        <a class="btn" href="{% url 'dashboard' %}">Go to my dashboard</a>
+      {% else %}
+        <a class="btn" href="{% url 'accounts:register' %}">Create a rider account</a>
+        <a class="btn btn-outline" href="{% url 'accounts:login' %}">Log in</a>
+      {% endif %}
+    </div>
   </div>
   <img src="{% static 'img/rider-hero.svg' %}" alt="Rider on a motorbike protected by a shield">
 </section>

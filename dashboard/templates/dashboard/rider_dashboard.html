@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Rider dashboard{% endblock %}
+{% block content %}
+<section class="card welcome">
+  <div>
+    <h1>Hi, {{ user.first_name|default:user.username }}!</h1>
+    <p class="muted">Here's your RiderGuard summary. Platforms you ride for: <strong>{{ user.get_platforms_display }}</strong></p>
+    <a class="btn btn-amber" href="#">Log a trip</a>
+    <span class="soon">Sprint 3</span>
+  </div>
+  <img src="{% static 'img/rider-hero.svg' %}" alt="Rider on a motorbike protected by a shield">
+</section>
+
+<section class="grid grid-3 mt">
+  {% for s in stats %}
+    <div class="card stat">
+      <div class="label">{{ s.label }}</div>
+      <div class="value">{{ s.value }}</div>
+      <div class="note">{{ s.note }}</div>
+    </div>
+  {% endfor %}
+</section>
+
+<section class="grid grid-2 mt">
+  <div class="card">
+    <h2>Rider tools</h2>
+    <div class="quick-links">
+      {% block rider_links %}{% endblock %}
+      <a href="#">Trip Logger <span class="soon">Sprint 3</span></a>
+      <a href="#">Fare Checker <span class="soon">Sprint 4</span></a>
+      <a href="#">Dispute Vault <span class="soon">Sprint 5</span></a>
+      <a href="#">Rights &amp; Resources Hub <span class="soon">Sprint 5</span></a>
+      <a href="#">Community Reports <span class="soon">Sprint 6</span></a>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Flagged fares &amp; disputes</h2>
+    <p class="muted">Nothing flagged yet. Once you start logging trips, RiderGuard will compare each fare
+      against published commission rates and list anything that looks off here.</p>
+  </div>
+</section>
+{% endblock %}
