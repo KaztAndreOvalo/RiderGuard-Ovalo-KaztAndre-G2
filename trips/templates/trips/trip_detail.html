@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Trip on {{ trip.trip_date|date:"M d, Y" }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'trips:list' %}">&larr; Back to my trips</a></p>
+<div class="page-head">
+  <div>
+    <h1>{{ trip.platform }} &middot; {{ trip.get_service_type_display }}</h1>
+    <p class="muted">{{ trip.trip_date|date:"l, F d, Y" }} &middot; {{ trip.pickup_location }} &rarr; {{ trip.dropoff_location }}</p>
+  </div>
+  <div class="actions">
+    <a class="btn" href="{% url 'trips:edit' trip.pk %}">Edit</a>
+    <a class="btn btn-danger" href="{% url 'trips:delete' trip.pk %}">Delete</a>
+  </div>
+</div>
+
+{% block fare_check %}{% endblock %}
+
+<div class="grid grid-2 mt">
+  <div class="card">
+    <h2>Fare breakdown</h2>
+    <dl class="details">
+      <dt>Gross fare</dt><dd>₱{{ trip.gross_fare }}</dd>
+      <dt>Commission</dt><dd>₱{{ trip.commission_deducted }} ({{ trip.commission_percent_charged }}% of gross)</dd>
+      <dt>Other deductions</dt><dd>₱{{ trip.other_deductions }}</dd>
+      <dt>Tips</dt><dd>₱{{ trip.tips }}</dd>
+      <dt>Net received</dt><dd><strong>₱{{ trip.net_received }}</strong></dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h2>Trip details</h2>
+    <dl class="details">
+      <dt>Platform</dt><dd>{{ trip.platform }}</dd>
+      <dt>Service</dt><dd>{{ trip.get_service_type_display }}</dd>
+      <dt>Distance</dt><dd>{% if trip.distance_km %}{{ trip.distance_km }} km{% else %}—{% endif %}</dd>
+      <dt>Logged</dt><dd>{{ trip.created_at|date:"M d, Y g:i A" }}</dd>
+      {% if trip.updated_at|date:"U" != trip.created_at|date:"U" %}<dt>Last edited</dt><dd>{{ trip.updated_at|date:"M d, Y g:i A" }}</dd>{% endif %}
+      <dt>Notes</dt><dd>{{ trip.notes|default:"—"|linebreaksbr }}</dd>
+      <dt>Receipt</dt><dd>{% if trip.receipt_photo %}<a href="{{ trip.receipt_photo.url }}" target="_blank" rel="noopener">View receipt photo</a>{% else %}—{% endif %}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

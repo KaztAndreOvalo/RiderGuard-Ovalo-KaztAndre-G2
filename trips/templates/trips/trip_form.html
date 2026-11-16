@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<p>
+  {% if trip %}<a href="{% url 'trips:detail' trip.pk %}">&larr; Back to trip</a>
+  {% else %}<a href="{% url 'trips:list' %}">&larr; Back to my trips</a>{% endif %}
+</p>
+<div class="card" style="max-width:780px">
+  <h1>{{ title }}</h1>
+  <p class="muted">Copy the numbers from your platform's fare breakdown. Fields marked * are required.</p>
+  <form method="post" enctype="multipart/form-data" novalidate class="mt">
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+
+    <h2>Trip</h2>
+    <div class="grid grid-2" style="gap:0 16px">
+      {% include "partials/field.html" with field=form.platform %}
+      {% include "partials/field.html" with field=form.service_type %}
+      {% include "partials/field.html" with field=form.trip_date %}
+      {% include "partials/field.html" with field=form.distance_km %}
+      {% include "partials/field.html" with field=form.pickup_location %}
+      {% include "partials/field.html" with field=form.dropoff_location %}
+    </div>
+
+    <h2 class="mt">Fare breakdown</h2>
+    <div class="grid grid-2" style="gap:0 16px">
+      {% include "partials/field.html" with field=form.gross_fare %}
+      {% include "partials/field.html" with field=form.commission_deducted %}
+      {% include "partials/field.html" with field=form.other_deductions %}
+      {% include "partials/field.html" with field=form.tips %}
+      {% include "partials/field.html" with field=form.net_received %}
+    </div>
+
+    <h2 class="mt">Evidence</h2>
+    {% if trip.receipt_photo %}<p class="muted">Current receipt: <a href="{{ trip.receipt_photo.url }}" target="_blank" rel="noopener">view</a>. Upload a new one to replace it.</p>{% endif %}
+    {% include "partials/field.html" with field=form.receipt_photo %}
+    {% include "partials/field.html" with field=form.notes %}
+
+    <div class="actions">
+      <button class="btn" type="submit">{% if trip %}Save changes{% else %}Log trip{% endif %}</button>
+      <a class="btn btn-outline" href="{% if trip %}{% url 'trips:detail' trip.pk %}{% else %}{% url 'trips:list' %}{% endif %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
