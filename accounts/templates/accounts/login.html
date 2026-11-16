@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<div class="auth-wrap">
+  <div class="auth-art">
+    <img src="{% static 'img/rider-hero.svg' %}" alt="Rider on a motorbike protected by a shield">
+    <h2>Welcome back, rider</h2>
+    <p class="muted">Pick up where you left off: your trips, fare checks and dispute files are waiting.</p>
+  </div>
+  <div class="auth-form">
+    <h1>Log in</h1>
+    <p class="muted">Use your username or email address.</p>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      {% include "partials/field.html" with field=form.username %}
+      {% include "partials/field.html" with field=form.password %}
+      <input type="hidden" name="next" value="{{ next }}">
+      <button type="submit" class="btn btn-block">Log in</button>
+    </form>
+    <p class="muted" style="margin-top:16px">New to RiderGuard? <a href="{% url 'accounts:register' %}">Create an account</a></p>
+  </div>
+</div>
+{% endblock %}

@@ -1,4 +1,10 @@
 <a href="{% url 'home' %}">Home</a>
-{% if not user.is_authenticated %}
+{% if user.is_authenticated %}
+  <form method="post" action="{% url 'accounts:logout' %}">
+    {% csrf_token %}
+    <button type="submit">Log out</button>
+  </form>
+{% else %}
+  <a href="{% url 'accounts:login' %}">Log in</a>
   <a href="{% url 'accounts:register' %}">Register</a>
 {% endif %}

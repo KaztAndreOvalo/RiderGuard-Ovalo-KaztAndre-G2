@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 
 from .models import User
 
@@ -62,3 +62,14 @@ class RegistrationForm(StyledFormMixin, UserCreationForm):
         if commit:
             user.save()
         return user
+
+
+class LoginForm(StyledFormMixin, AuthenticationForm):
+    username = forms.CharField(label="Username or email", max_length=254)
+
+    placeholders = {"username": "juandc or juan@example.com", "password": "Your password"}
+
+    error_messages = {
+        "invalid_login": "Invalid username/email or password. Please try again.",
+        "inactive": "This account has been deactivated. Please contact an administrator.",
+    }

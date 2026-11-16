@@ -87,6 +87,11 @@ DATABASES = {
 
 # Custom user model with roles (Admin / Rider)
 AUTH_USER_MODEL = "accounts.User"
+AUTHENTICATION_BACKENDS = ["accounts.backends.EmailOrUsernameBackend"]
+
+LOGIN_URL = "accounts:login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "accounts:login"
 
 
 # Password validation
