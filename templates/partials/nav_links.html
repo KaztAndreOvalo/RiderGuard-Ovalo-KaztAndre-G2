@@ -2,6 +2,8 @@
   {% if user.is_admin_role %}
     <a href="{% url 'adminpanel:dashboard' %}">Dashboard</a>
     <a href="{% url 'adminpanel:users' %}">Users</a>
+    <a href="{% url 'adminpanel:trips' %}">Trips</a>
+    <a href="{% url 'adminpanel:rates' %}">Rates</a>
   {% else %}
     <a href="{% url 'dashboard:rider' %}">Dashboard</a>
     <a href="{% url 'trips:list' %}">My trips</a>

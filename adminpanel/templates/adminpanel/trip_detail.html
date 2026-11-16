@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Trip #{{ trip.pk }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'adminpanel:trips' %}">&larr; Back to all trips</a></p>
+<div class="page-head">
+  <div>
+    <h1>{{ trip.platform }} &middot; {{ trip.get_service_type_display }}</h1>
+    <p class="muted">Logged by <a href="{% url 'adminpanel:user_detail' trip.rider.pk %}">{{ trip.rider.get_full_name|default:trip.rider.username }}</a>
+      &middot; {{ trip.trip_date|date:"F d, Y" }} &middot; {{ trip.pickup_location }} &rarr; {{ trip.dropoff_location }}</p>
+  </div>
+  <span class="pill pill-muted">Read-only</span>
+</div>
+
+{% include "trips/partials/fare_check_card.html" %}
+
+<div class="card mt">
+  <h2>Fare breakdown</h2>
+  <dl class="details">
+    <dt>Gross fare</dt><dd>₱{{ trip.gross_fare }}</dd>
+    <dt>Commission</dt><dd>₱{{ trip.commission_deducted }} ({{ trip.commission_percent_charged }}%)</dd>
+    <dt>Other deductions</dt><dd>₱{{ trip.other_deductions }}</dd>
+    <dt>Tips</dt><dd>₱{{ trip.tips }}</dd>
+    <dt>Net received</dt><dd>₱{{ trip.net_received }}</dd>
+    <dt>Distance</dt><dd>{% if trip.distance_km %}{{ trip.distance_km }} km{% else %}—{% endif %}</dd>
+    <dt>Notes</dt><dd>{{ trip.notes|default:"—"|linebreaksbr }}</dd>
+    <dt>Receipt</dt><dd>{% if trip.receipt_photo %}<a href="{{ trip.receipt_photo.url }}" target="_blank" rel="noopener">View receipt photo</a>{% else %}—{% endif %}</dd>
+  </dl>
+</div>
+{% endblock %}
