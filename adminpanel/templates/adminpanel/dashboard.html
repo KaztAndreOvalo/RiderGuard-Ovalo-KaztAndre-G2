@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Admin dashboard{% endblock %}
+{% block content %}
+<section class="card welcome">
+  <div>
+    <h1>Admin dashboard</h1>
+    <p class="muted">Welcome, {{ user.first_name|default:user.username }}. Monitor RiderGuard accounts and keep the platform healthy.</p>
+    {% block admin_actions %}{% endblock %}
+  </div>
+  <img src="{% static 'img/admin-illustration.svg' %}" alt="Administrator reviewing a list of users">
+</section>
+
+<section class="grid grid-3 mt">
+  <div class="card stat"><div class="label">Total users</div><div class="value">{{ total_users }}</div></div>
+  <div class="card stat"><div class="label">Riders</div><div class="value">{{ total_riders }}</div></div>
+  <div class="card stat"><div class="label">Admins</div><div class="value">{{ total_admins }}</div></div>
+  <div class="card stat"><div class="label">New this week</div><div class="value">{{ new_this_week }}</div></div>
+  <div class="card stat"><div class="label">Deactivated</div><div class="value">{{ inactive_users }}</div></div>
+</section>
+
+<section class="card mt">
+  <h2>Recent registrations</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
+      <tbody>
+        {% for u in recent_users %}
+          <tr>
+            <td><img class="avatar-sm" src="{{ u.photo_url }}" alt=""> {{ u.get_full_name|default:u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="pill {% if u.is_admin_role %}pill-admin{% else %}pill-rider{% endif %}">{{ u.get_role_display }}</span></td>
+            <td><span class="pill {% if u.is_active %}pill-on{% else %}pill-off{% endif %}">{{ u.is_active|yesno:"Active,Deactivated" }}</span></td>
+            <td>{{ u.date_joined|date:"M d, Y" }}</td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="5" class="muted">No users yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

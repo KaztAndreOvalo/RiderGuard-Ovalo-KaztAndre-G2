@@ -1,10 +1,16 @@
-<a href="{% url 'home' %}">Home</a>
 {% if user.is_authenticated %}
+  {% if user.is_admin_role %}
+    <a href="{% url 'adminpanel:dashboard' %}">Dashboard</a>
+  {% else %}
+    <a href="{% url 'dashboard:rider' %}">Dashboard</a>
+  {% endif %}
+  <span class="role-badge">{{ user.get_role_display }}</span>
   <form method="post" action="{% url 'accounts:logout' %}">
     {% csrf_token %}
     <button type="submit">Log out</button>
   </form>
 {% else %}
+  <a href="{% url 'home' %}">Home</a>
   <a href="{% url 'accounts:login' %}">Log in</a>
   <a href="{% url 'accounts:register' %}">Register</a>
 {% endif %}
