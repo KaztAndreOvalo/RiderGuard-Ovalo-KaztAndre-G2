@@ -6,7 +6,10 @@
   <div>
     <h1>Admin dashboard</h1>
     <p class="muted">Welcome, {{ user.first_name|default:user.username }}. Monitor RiderGuard accounts and keep the platform healthy.</p>
-    {% block admin_actions %}{% endblock %}
+    <div class="actions">
+      <a class="btn" href="{% url 'adminpanel:users' %}">Manage users</a>
+      <a class="btn btn-amber" href="{% url 'adminpanel:user_create' %}">+ Add user</a>
+    </div>
   </div>
   <img src="{% static 'img/admin-illustration.svg' %}" alt="Administrator reviewing a list of users">
 </section>
@@ -20,14 +23,14 @@
 </section>
 
 <section class="card mt">
-  <h2>Recent registrations</h2>
+  <div class="page-head"><h2 style="margin:0">Recent registrations</h2><a href="{% url 'adminpanel:users' %}">View all &rarr;</a></div>
   <div class="table-wrap">
     <table>
       <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Status</th><th>Joined</th></tr></thead>
       <tbody>
         {% for u in recent_users %}
           <tr>
-            <td><img class="avatar-sm" src="{{ u.photo_url }}" alt=""> {{ u.get_full_name|default:u.username }}</td>
+            <td><img class="avatar-sm" src="{{ u.photo_url }}" alt=""> <a href="{% url 'adminpanel:user_detail' u.pk %}">{{ u.get_full_name|default:u.username }}</a></td>
             <td>{{ u.email }}</td>
             <td><span class="pill {% if u.is_admin_role %}pill-admin{% else %}pill-rider{% endif %}">{{ u.get_role_display }}</span></td>
             <td><span class="pill {% if u.is_active %}pill-on{% else %}pill-off{% endif %}">{{ u.is_active|yesno:"Active,Deactivated" }}</span></td>

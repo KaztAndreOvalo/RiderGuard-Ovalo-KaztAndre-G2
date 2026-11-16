@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ member.username }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'adminpanel:users' %}">&larr; Back to users</a></p>
+<div class="card">
+  <div class="page-head">
+    <div class="profile-head">
+      <img class="avatar" src="{{ member.photo_url }}" alt="Profile photo of {{ member }}">
+      <div>
+        <h1>{{ member.get_full_name|default:member.username }}</h1>
+        <p class="muted">@{{ member.username }}</p>
+        <span class="pill {% if member.is_admin_role %}pill-admin{% else %}pill-rider{% endif %}">{{ member.get_role_display }}</span>
+        <span class="pill {% if member.is_active %}pill-on{% else %}pill-off{% endif %}">{{ member.is_active|yesno:"Active,Deactivated" }}</span>
+      </div>
+    </div>
+    <div class="actions">
+      <a class="btn" href="{% url 'adminpanel:user_edit' member.pk %}">Edit</a>
+      <a class="btn btn-outline" href="{% url 'adminpanel:user_set_password' member.pk %}">Reset password</a>
+      {% if member != user %}
+        <form class="inline-form" method="post" action="{% url 'adminpanel:user_toggle_active' member.pk %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <button class="btn btn-outline" type="submit">{{ member.is_active|yesno:"Deactivate,Activate" }}</button>
+        </form>
+        <a class="btn btn-danger" href="{% url 'adminpanel:user_delete' member.pk %}">Delete</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <dl class="details">
+    <dt>Email</dt><dd>{{ member.email }}</dd>
+    <dt>Contact number</dt><dd>{{ member.contact_number|default:"—" }}</dd>
+    <dt>City</dt><dd>{{ member.city|default:"—" }}</dd>
+    <dt>Platforms</dt><dd>{{ member.get_platforms_display }}</dd>
+    <dt>Vehicle</dt><dd>{{ member.get_vehicle_type_display|default:"—" }}{% if member.plate_number %} · {{ member.plate_number }}{% endif %}</dd>
+    <dt>Joined</dt><dd>{{ member.date_joined|date:"M d, Y g:i A" }}</dd>
+    <dt>Last login</dt><dd>{{ member.last_login|date:"M d, Y g:i A"|default:"Never" }}</dd>
+  </dl>
+</div>
+{% endblock %}
