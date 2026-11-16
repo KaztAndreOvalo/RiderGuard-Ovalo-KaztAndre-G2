@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Welcome{% endblock %}
+{% block content %}
+<section class="hero">
+  <div>
+    <h1>Know your fare. Keep your evidence. Protect your ride.</h1>
+    <p class="muted">RiderGuard helps ride-hailing and delivery riders on Maxim, MoveIt and Grab
+      check their pay against published commission rates and organize evidence for unfair
+      cancellations and deactivations.</p>
+    {% block hero_actions %}{% endblock %}
+  </div>
+  <img src="{% static 'img/rider-hero.svg' %}" alt="Rider on a motorbike protected by a shield">
+</section>
+{% endblock %}

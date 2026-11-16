@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 320" role="img" aria-label="Illustration of a rider on a motorbike protected by a shield">
+  <circle cx="210" cy="160" r="150" fill="#e7f0fb"/>
+  <path d="M60 262h300" stroke="#c9d6e8" stroke-width="6" stroke-linecap="round"/>
+  <path d="M90 280h90M240 280h110" stroke="#dbe5f2" stroke-width="5" stroke-linecap="round"/>
+  <!-- shield -->
+  <path d="M300 48l46 16v34c0 30-20 52-46 62-26-10-46-32-46-62V64z" fill="#f5a524"/>
+  <path d="M282 104l13 13 25-27" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- wheels -->
+  <circle cx="130" cy="232" r="32" fill="#1f2a44"/><circle cx="130" cy="232" r="13" fill="#c9d6e8"/>
+  <circle cx="290" cy="232" r="32" fill="#1f2a44"/><circle cx="290" cy="232" r="13" fill="#c9d6e8"/>
+  <!-- bike body -->
+  <path d="M130 232l40-58h70l50 58" fill="none" stroke="#1f2a44" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M150 186h110c18 0 30 12 30 28H150z" fill="#2563eb"/>
+  <path d="M258 150l24 36" stroke="#1f2a44" stroke-width="9" stroke-linecap="round"/>
+  <path d="M270 146h22" stroke="#1f2a44" stroke-width="9" stroke-linecap="round"/>
+  <!-- delivery box -->
+  <rect x="104" y="138" width="56" height="48" rx="6" fill="#f5a524"/>
+  <path d="M104 156h56" stroke="#d98a0b" stroke-width="4"/>
+  <!-- rider -->
+  <path d="M196 182l-6-58c-1-14 10-24 24-24h8c14 0 22 12 18 25l-14 45z" fill="#1d4ed8"/>
+  <path d="M232 128l36 22" stroke="#1d4ed8" stroke-width="14" stroke-linecap="round"/>
+  <path d="M200 180l40 6 6 40" fill="none" stroke="#1f2a44" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="222" cy="78" r="26" fill="#f5a524"/>
+  <path d="M198 80a24 24 0 0 1 48 0z" fill="#1f2a44"/>
+  <rect x="212" y="78" width="34" height="10" rx="5" fill="#93c5fd"/>
+</svg>
