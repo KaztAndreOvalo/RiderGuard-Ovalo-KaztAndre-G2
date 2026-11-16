@@ -73,3 +73,61 @@ class LoginForm(StyledFormMixin, AuthenticationForm):
         "invalid_login": "Invalid username/email or password. Please try again.",
         "inactive": "This account has been deactivated. Please contact an administrator.",
     }
+
+
+class ProfileForm(StyledFormMixin, forms.ModelForm):
+    """Lets a logged-in user update their own profile details."""
+
+    MAX_PHOTO_MB = 2
+
+    platforms = forms.MultipleChoiceField(
+        choices=User.Platform.choices, widget=forms.CheckboxSelectMultiple, required=False,
+        help_text="Platforms you currently ride for.",
+    )
+    remove_photo = forms.BooleanField(required=False, label="Remove current photo")
+
+    placeholders = {"contact_number": "09171234567", "city": "Cebu City", "plate_number": "ABC 1234"}
+
+    class Meta:
+        model = User
+        fields = (
+            "profile_photo", "first_name", "last_name", "email", "contact_number",
+            "city", "platforms", "vehicle_type", "plate_number",
+        )
+        widgets = {"profile_photo": forms.FileInput(attrs={"accept": "image/*"})}
+        help_texts = {"profile_photo": "JPG or PNG, up to 2 MB."}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name in ("first_name", "last_name", "email"):
+            self.fields[name].required = True
+        if not self.instance.is_rider:
+            # Ride-related details only make sense for riders.
+            for name in ("platforms", "vehicle_type", "plate_number"):
+                self.fields.pop(name)
+        if not self.instance.profile_photo:
+            self.fields.pop("remove_photo")
+
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("An account with this email already exists.")
+        return email
+
+    def clean_profile_photo(self):
+        photo = self.cleaned_data.get("profile_photo")
+        if photo and hasattr(photo, "size") and photo.size > self.MAX_PHOTO_MB * 1024 * 1024:
+            raise forms.ValidationError(f"Photo must be {self.MAX_PHOTO_MB} MB or smaller.")
+        return photo
+
+    def clean_plate_number(self):
+        return self.cleaned_data.get("plate_number", "").strip().upper()
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if self.cleaned_data.get("remove_photo") and "profile_photo" not in self.changed_data:
+            user.profile_photo.delete(save=False)
+            user.profile_photo = ""
+        if commit:
+            user.save()
+        return user

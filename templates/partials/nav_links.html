@@ -5,6 +5,7 @@
   {% else %}
     <a href="{% url 'dashboard:rider' %}">Dashboard</a>
   {% endif %}
+  <a href="{% url 'accounts:profile' %}"><img class="avatar-sm" src="{{ user.photo_url }}" alt=""> Profile</a>
   <span class="role-badge">{{ user.get_role_display }}</span>
   <form method="post" action="{% url 'accounts:logout' %}">
     {% csrf_token %}
