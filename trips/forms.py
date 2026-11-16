@@ -48,6 +48,8 @@ class TripForm(forms.ModelForm):
         if self.instance.pk:
             platforms = platforms | Platform.objects.filter(pk=self.instance.platform_id)
         self.fields["platform"].queryset = platforms.distinct()
+        for name in ("other_deductions", "tips"):
+            self.fields[name].required = False  # blank means ₱0.00
         self.fields["platform"].empty_label = "Select platform"
         if not self.instance.pk:
             self.initial.setdefault("trip_date", timezone.localdate())
