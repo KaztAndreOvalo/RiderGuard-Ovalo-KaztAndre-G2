@@ -1,8 +1,11 @@
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth import views as auth_views
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
 from django.shortcuts import redirect, render
 
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, ProfileForm, RegistrationForm
 
 
 def register_view(request):
@@ -45,3 +48,36 @@ class LogoutView(auth_views.LogoutView):
         response = super().post(request, *args, **kwargs)
         messages.info(request, "You have been logged out.")
         return response
+
+
+# Profile views never take a user id: they always use request.user,
+# so a user can only ever view or edit their own profile.
+
+@login_required
+def profile_view(request):
+    return render(request, "accounts/profile.html", {"profile": request.user})
+
+
+@login_required
+def profile_edit(request):
+    form = ProfileForm(request.POST or None, request.FILES or None, instance=request.user)
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Your profile has been updated.")
+            return redirect("accounts:profile")
+        messages.error(request, "Please correct the errors below.")
+    return render(request, "accounts/profile_edit.html", {"form": form})
+
+
+@login_required
+def password_change(request):
+    form = PasswordChangeForm(request.user, request.POST or None)
+    if request.method == "POST":
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # keep the user logged in
+            messages.success(request, "Your password has been changed.")
+            return redirect("accounts:profile")
+        messages.error(request, "Please correct the errors below.")
+    return render(request, "accounts/password_change.html", {"form": form})

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}My profile{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <div class="profile-head">
+      <img class="avatar" src="{{ profile.photo_url }}" alt="{% if profile.profile_photo %}Profile photo of {{ profile }}{% else %}Default user illustration{% endif %}">
+      <div>
+        <h1>{{ profile.get_full_name|default:profile.username }}</h1>
+        <p class="muted" style="margin:0 0 6px">@{{ profile.username }}</p>
+        <span class="pill {% if profile.is_admin_role %}pill-admin{% else %}pill-rider{% endif %}">{{ profile.get_role_display }}</span>
+      </div>
+    </div>
+    <div class="actions mt">
+      <a class="btn" href="{% url 'accounts:profile_edit' %}">Edit profile</a>
+      <a class="btn btn-outline" href="{% url 'accounts:password_change' %}">Change password</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Account details</h2>
+    <dl class="details">
+      <dt>Full name</dt><dd>{{ profile.get_full_name|default:"—" }}</dd>
+      <dt>Email</dt><dd>{{ profile.email }}</dd>
+      <dt>Contact number</dt><dd>{{ profile.contact_number|default:"—" }}</dd>
+      <dt>City</dt><dd>{{ profile.city|default:"—" }}</dd>
+      {% if profile.is_rider %}
+        <dt>Platforms</dt><dd>{{ profile.get_platforms_display }}</dd>
+        <dt>Vehicle</dt><dd>{{ profile.get_vehicle_type_display|default:"—" }}</dd>
+        <dt>Plate number</dt><dd>{{ profile.plate_number|default:"—" }}</dd>
+      {% endif %}
+      <dt>Member since</dt><dd>{{ profile.date_joined|date:"F d, Y" }}</dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

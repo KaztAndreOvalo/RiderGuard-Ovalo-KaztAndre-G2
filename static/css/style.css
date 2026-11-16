@@ -159,3 +159,4 @@ dl.details dd { margin: 0; }
 .welcome { display: flex; align-items: center; gap: 20px; justify-content: space-between; flex-wrap: wrap; }
 .welcome img { max-width: 220px; }
 footer { text-align: center; color: var(--muted); font-size: .85rem; padding: 20px 16px 32px; }
+.nav .avatar-sm { width: 24px; height: 24px; margin-right: 4px; }
