@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # RiderGuard apps
+    "accounts",
 ]
 
 MIDDLEWARE = [
@@ -81,6 +83,10 @@ DATABASES = {
         "OPTIONS": {"sslmode": os.getenv("DB_SSLMODE", "prefer")},
     }
 }
+
+
+# Custom user model with roles (Admin / Rider)
+AUTH_USER_MODEL = "accounts.User"
 
 
 # Password validation
