@@ -8,6 +8,8 @@
     <p class="muted">Welcome, {{ user.first_name|default:user.username }}. Monitor RiderGuard accounts and keep the platform healthy.</p>
     <div class="actions">
       <a class="btn" href="{% url 'adminpanel:users' %}">Manage users</a>
+      <a class="btn btn-outline" href="{% url 'adminpanel:trips' %}">All trips</a>
+      <a class="btn btn-outline" href="{% url 'adminpanel:rates' %}">Reference rates</a>
       <a class="btn btn-amber" href="{% url 'adminpanel:user_create' %}">+ Add user</a>
     </div>
   </div>
@@ -20,6 +22,31 @@
   <div class="card stat"><div class="label">Admins</div><div class="value">{{ total_admins }}</div></div>
   <div class="card stat"><div class="label">New this week</div><div class="value">{{ new_this_week }}</div></div>
   <div class="card stat"><div class="label">Deactivated</div><div class="value">{{ inactive_users }}</div></div>
+  <div class="card stat"><div class="label">Trips logged</div><div class="value">{{ total_trips }}</div></div>
+  <div class="card stat"><div class="label">Flagged fares</div><div class="value">{{ flagged_trips }}</div><div class="note">Across all riders</div></div>
+  <div class="card stat"><div class="label">Reference rates</div><div class="value">{{ rate_count }}</div></div>
+</section>
+
+<section class="grid grid-2 mt">
+  <div class="card">
+    <h2>Flags by platform</h2>
+    {% for row in flags_by_platform %}
+      <div class="flag-row"><strong>{{ row.platform__name }}</strong><span>{{ row.total }} flagged trip{{ row.total|pluralize }}</span></div>
+    {% empty %}
+      <p class="muted">No flagged trips yet.</p>
+    {% endfor %}
+  </div>
+  <div class="card">
+    <div class="page-head"><h2 style="margin:0">Latest flagged trips</h2><a href="{% url 'adminpanel:trips' %}?status=FLAGGED">View all &rarr;</a></div>
+    {% for trip in recent_flagged %}
+      <div class="flag-row">
+        <div><strong>{{ trip.platform }}</strong> &middot; {{ trip.rider.get_full_name|default:trip.rider.username }} &middot; {{ trip.trip_date|date:"M d" }}</div>
+        <a class="btn btn-sm btn-outline" href="{% url 'adminpanel:trip_detail' trip.pk %}">View</a>
+      </div>
+    {% empty %}
+      <p class="muted">Nothing flagged.</p>
+    {% endfor %}
+  </div>
 </section>
 
 <section class="card mt">

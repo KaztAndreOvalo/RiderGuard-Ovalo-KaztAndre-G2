@@ -13,6 +13,7 @@ urlpatterns = [
     path("dashboard/", dashboard_views.dashboard_redirect, name="dashboard"),
     path("dashboard/", include("dashboard.urls")),
     path("panel/", include("adminpanel.urls")),
+    path("trips/", include("trips.urls")),
 ]
 
 if settings.DEBUG:

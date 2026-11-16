@@ -3,7 +3,7 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth.forms import SetPasswordForm
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -11,6 +11,7 @@ from django.views.decorators.http import require_POST
 
 from accounts.decorators import admin_required
 from accounts.models import User
+from trips.models import CommissionRate, Trip
 
 from .forms import AdminUserCreateForm, AdminUserEditForm
 
@@ -26,6 +27,14 @@ def admin_dashboard(request):
         "new_this_week": users.filter(date_joined__gte=week_ago).count(),
         "inactive_users": users.filter(is_active=False).count(),
         "recent_users": users.order_by("-date_joined")[:6],
+        "total_trips": Trip.objects.count(),
+        "flagged_trips": Trip.objects.filter(check_status=Trip.CheckStatus.FLAGGED).count(),
+        "rate_count": CommissionRate.objects.count(),
+        "flags_by_platform": (
+            Trip.objects.filter(check_status=Trip.CheckStatus.FLAGGED)
+            .values("platform__name").annotate(total=Count("id")).order_by("-total")[:5]
+        ),
+        "recent_flagged": Trip.objects.filter(check_status=Trip.CheckStatus.FLAGGED).select_related("platform", "rider")[:5],
     }
     return render(request, "adminpanel/dashboard.html", context)
 
