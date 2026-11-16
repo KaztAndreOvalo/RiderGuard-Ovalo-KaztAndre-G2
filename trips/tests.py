@@ -156,3 +156,123 @@ class TripAccessTests(TripTestCase):
         self.client.force_login(self.admin)
         response = self.client.get(reverse("trips:create"))
         self.assertRedirects(response, reverse("dashboard"), fetch_redirect_response=False)
+
+
+class FareCheckTests(TripTestCase):
+    def setUp(self):
+        super().setUp()
+        from .models import CommissionRate
+        self.rate = CommissionRate.objects.create(
+            platform=self.maxim, service_type="RIDE", commission_percent=Decimal("15"),
+            effective_from=timezone.localdate() - timedelta(days=30),
+        )
+
+    def test_fair_trip_is_ok(self):
+        trip = self.make_trip(gross_fare=Decimal("200"), commission_deducted=Decimal("30"), net_received=Decimal("170"))
+        self.assertEqual(trip.check_status, Trip.CheckStatus.OK)
+        self.assertEqual(trip.expected_commission, Decimal("30.00"))
+        self.assertEqual(trip.applied_rate, self.rate)
+
+    def test_overcharged_commission_is_flagged(self):
+        trip = self.make_trip(gross_fare=Decimal("200"), commission_deducted=Decimal("50"), net_received=Decimal("150"))
+        self.assertTrue(trip.is_flagged)
+        self.assertEqual(trip.commission_overcharge, Decimal("20.00"))
+        self.assertIn("more than expected", trip.flag_reasons)
+
+    def test_short_payout_is_flagged(self):
+        trip = self.make_trip(gross_fare=Decimal("200"), commission_deducted=Decimal("30"), net_received=Decimal("150"))
+        self.assertTrue(trip.is_flagged)
+        self.assertEqual(trip.net_shortfall, Decimal("20.00"))
+        self.assertIn("less than your breakdown", trip.flag_reasons)
+
+    def test_small_rounding_difference_is_not_flagged(self):
+        trip = self.make_trip(gross_fare=Decimal("200"), commission_deducted=Decimal("31.50"), net_received=Decimal("168.50"))
+        self.assertEqual(trip.check_status, Trip.CheckStatus.OK)
+
+    def test_no_rate_for_platform(self):
+        trip = self.make_trip(platform=Platform.objects.get(code="GRAB"))
+        self.assertEqual(trip.check_status, Trip.CheckStatus.NO_RATE)
+
+    def test_rate_must_be_in_effect_on_trip_date(self):
+        trip = self.make_trip(trip_date=timezone.localdate() - timedelta(days=60))
+        self.assertEqual(trip.check_status, Trip.CheckStatus.NO_RATE)
+
+    def test_editing_trip_rechecks(self):
+        trip = self.make_trip(commission_deducted=Decimal("50"), net_received=Decimal("150"))
+        self.assertTrue(trip.is_flagged)
+        self.client.force_login(self.rider)
+        self.client.post(reverse("trips:edit", args=[trip.pk]), trip_data(
+            gross_fare="200.00", commission_deducted="30.00", other_deductions="0", net_received="170.00"))
+        trip.refresh_from_db()
+        self.assertEqual(trip.check_status, Trip.CheckStatus.OK)
+
+    def test_flagged_filter_and_dashboard(self):
+        self.make_trip(commission_deducted=Decimal("50"), net_received=Decimal("150"), pickup_location="Flagged1")
+        self.make_trip(pickup_location="Fine1")
+        self.client.force_login(self.rider)
+        response = self.client.get(reverse("trips:list"), {"status": "FLAGGED"})
+        self.assertContains(response, "Flagged1")
+        self.assertNotContains(response, "Fine1")
+        response = self.client.get(reverse("dashboard:rider"))
+        self.assertContains(response, "more than expected")
+
+
+class AdminFareTests(TripTestCase):
+    def setUp(self):
+        super().setUp()
+        self.client.force_login(self.admin)
+
+    def rate_data(self, **overrides):
+        data = {"platform": self.maxim.pk, "service_type": "RIDE", "commission_percent": "15",
+                "effective_from": (timezone.localdate() - timedelta(days=30)).isoformat(), "source_note": ""}
+        data.update(overrides)
+        return data
+
+    def test_admin_adds_rate_and_existing_trips_are_rechecked(self):
+        trip = self.make_trip(commission_deducted=Decimal("50"), net_received=Decimal("150"))
+        self.assertEqual(trip.check_status, Trip.CheckStatus.NO_RATE)
+        response = self.client.post(reverse("adminpanel:rate_create"), self.rate_data(), follow=True)
+        self.assertContains(response, "Reference rate added")
+        trip.refresh_from_db()
+        self.assertTrue(trip.is_flagged)
+
+    def test_rate_validation(self):
+        response = self.client.post(reverse("adminpanel:rate_create"), self.rate_data(commission_percent="150"))
+        self.assertContains(response, "less than or equal to 100")
+        self.client.post(reverse("adminpanel:rate_create"), self.rate_data())
+        response = self.client.post(reverse("adminpanel:rate_create"), self.rate_data())
+        self.assertContains(response, "already starts on that date")
+
+    def test_edit_and_delete_rate(self):
+        self.client.post(reverse("adminpanel:rate_create"), self.rate_data())
+        from .models import CommissionRate
+        rate = CommissionRate.objects.get()
+        self.client.post(reverse("adminpanel:rate_edit", args=[rate.pk]), self.rate_data(commission_percent="18"))
+        rate.refresh_from_db()
+        self.assertEqual(rate.commission_percent, Decimal("18.00"))
+        self.client.post(reverse("adminpanel:rate_delete", args=[rate.pk]))
+        self.assertFalse(CommissionRate.objects.exists())
+
+    def test_admin_reads_all_trips(self):
+        self.make_trip(pickup_location="RiderOneTrip")
+        self.make_trip(rider=self.other, pickup_location="RiderTwoTrip")
+        response = self.client.get(reverse("adminpanel:trips"))
+        self.assertContains(response, ">rider1<")
+        self.assertContains(response, ">rider2<")
+        trip = Trip.objects.get(pickup_location="RiderTwoTrip")
+        self.assertContains(self.client.get(reverse("adminpanel:trip_detail", args=[trip.pk])), "Read-only")
+
+    def test_riders_cannot_open_admin_fare_pages(self):
+        self.client.force_login(self.rider)
+        for name in ("adminpanel:rates", "adminpanel:rate_create", "adminpanel:trips"):
+            response = self.client.get(reverse(name))
+            self.assertRedirects(response, reverse("dashboard"), fetch_redirect_response=False)
+
+
+class SeedDemoTests(TestCase):
+    def test_seed_demo_creates_accounts_and_flags(self):
+        from django.core.management import call_command
+        call_command("seed_demo", stdout=open("nul" if __import__("os").name == "nt" else "/dev/null", "w"))
+        rider = User.objects.get(username="demo_rider")
+        self.assertTrue(User.objects.get(username="demo_admin").is_admin_role)
+        self.assertGreater(rider.trips.filter(check_status=Trip.CheckStatus.FLAGGED).count(), 0)

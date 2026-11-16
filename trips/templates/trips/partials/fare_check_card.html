@@ -1,0 +1,24 @@
+<section class="card check-card check-{{ trip.check_status|lower }}">
+  <div class="page-head" style="margin-bottom:10px">
+    <h2 style="margin:0">Fare check</h2>
+    {% include "trips/partials/status_pill.html" %}
+  </div>
+  {% if trip.check_status == "FLAGGED" %}
+    <p><strong>This trip may have been underpaid.</strong> Keep the receipt; you can use it as evidence in a dispute.</p>
+    <ul class="flag-list">
+      {% for reason in trip.flag_reason_list %}<li>{{ reason }}</li>{% endfor %}
+    </ul>
+  {% elif trip.check_status == "OK" %}
+    <p>The commission and payout match the {{ trip.platform }} reference rate within the allowed ₱1.00 / 1% rounding margin.</p>
+  {% else %}
+    <p>There is no reference commission rate yet for {{ trip.platform }} ({{ trip.get_service_type_display }}) on {{ trip.trip_date|date:"M d, Y" }}, so only the payout total could be checked. An admin can add one.</p>
+  {% endif %}
+  <dl class="details mt">
+    <dt>Reference rate</dt>
+    <dd>{% if trip.applied_rate %}{{ trip.applied_rate.commission_percent }}% (effective {{ trip.applied_rate.effective_from|date:"M d, Y" }}){% if trip.applied_rate.source_note %}<br><span class="muted">{{ trip.applied_rate.source_note }}</span>{% endif %}{% else %}—{% endif %}</dd>
+    <dt>Expected commission</dt><dd>{% if trip.expected_commission is not None %}₱{{ trip.expected_commission }}{% else %}—{% endif %}</dd>
+    <dt>Commission charged</dt><dd>₱{{ trip.commission_deducted }} ({{ trip.commission_percent_charged }}%)</dd>
+    <dt>Payout shortfall</dt><dd>₱{{ trip.net_shortfall }}</dd>
+    <dt>Checked</dt><dd>{{ trip.checked_at|date:"M d, Y g:i A"|default:"—" }}</dd>
+  </dl>
+</section>

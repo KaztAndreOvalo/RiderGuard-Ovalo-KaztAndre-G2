@@ -24,17 +24,24 @@ def rider_dashboard(request):
     week_start = today - timedelta(days=today.weekday())  # Monday
     trips = Trip.objects.filter(rider=request.user)
     this_week = trips.filter(trip_date__gte=week_start)
-    week_totals = this_week.aggregate(net=Sum("net_received"), gross=Sum("gross_fare"))
+    week_totals = this_week.aggregate(net=Sum("net_received"))
+    flagged = trips.filter(check_status=Trip.CheckStatus.FLAGGED).select_related("platform")
+    underpaid = sum(
+        (max(t.commission_overcharge or Decimal("0"), Decimal("0")) + t.net_shortfall for t in flagged),
+        Decimal("0.00"),
+    )
 
     stats = [
         {"label": "Earnings this week", "value": f"₱{week_totals['net'] or Decimal('0.00'):,.2f}",
          "note": f"Since {week_start:%b %d}"},
         {"label": "Trips this week", "value": this_week.count(), "note": f"{trips.count()} logged in total"},
-        {"label": "Gross fares this week", "value": f"₱{week_totals['gross'] or Decimal('0.00'):,.2f}",
-         "note": "Before commission"},
+        {"label": "Flagged fares", "value": flagged.count(), "note": "Possible underpayment"},
+        {"label": "Possibly underpaid", "value": f"₱{underpaid:,.2f}", "note": "Across flagged trips"},
         {"label": "Pending disputes", "value": 0, "note": "Dispute Vault — Sprint 5"},
     ]
     return render(request, "dashboard/rider_dashboard.html", {
         "stats": stats,
         "recent_trips": trips.select_related("platform")[:5],
+        "flagged_trips": flagged[:3],
+        "flagged_count": flagged.count(),
     })

@@ -48,6 +48,8 @@ class TripForm(forms.ModelForm):
         if self.instance.pk:
             platforms = platforms | Platform.objects.filter(pk=self.instance.platform_id)
         self.fields["platform"].queryset = platforms.distinct()
+        for name in ("other_deductions", "tips"):
+            self.fields[name].required = False  # blank means ₱0.00
         self.fields["platform"].empty_label = "Select platform"
         if not self.instance.pk:
             self.initial.setdefault("trip_date", timezone.localdate())
@@ -131,6 +133,7 @@ class TripForm(forms.ModelForm):
 class TripFilterForm(forms.Form):
     platform = forms.ModelChoiceField(queryset=Platform.objects.all(), required=False, empty_label="All platforms")
     service_type = forms.ChoiceField(choices=[("", "All services")] + list(ServiceType.choices), required=False)
+    status = forms.ChoiceField(choices=[("", "Any fare status")] + list(Trip.CheckStatus.choices), required=False)
     date_from = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
     date_to = forms.DateField(required=False, widget=forms.DateInput(attrs={"type": "date"}))
 
@@ -142,6 +145,8 @@ class TripFilterForm(forms.Form):
             queryset = queryset.filter(platform=data["platform"])
         if data.get("service_type"):
             queryset = queryset.filter(service_type=data["service_type"])
+        if data.get("status"):
+            queryset = queryset.filter(check_status=data["status"])
         if data.get("date_from"):
             queryset = queryset.filter(trip_date__gte=data["date_from"])
         if data.get("date_to"):

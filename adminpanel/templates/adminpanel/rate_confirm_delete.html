@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Delete rate{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px">
+  <h1>Delete this reference rate?</h1>
+  <p><strong>{{ rate }}</strong></p>
+  <p class="muted">{{ trip_count }} logged trip{{ trip_count|pluralize }} currently use{{ trip_count|pluralize:"s," }} this rate. They will be re-checked against whichever rate applies next, or marked "No reference rate".</p>
+  <form method="post" class="actions">
+    {% csrf_token %}
+    <button class="btn btn-danger" type="submit">Yes, delete rate</button>
+    <a class="btn btn-outline" href="{% url 'adminpanel:rates' %}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

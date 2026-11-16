@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'adminpanel:rates' %}">&larr; Back to reference rates</a></p>
+<div class="card" style="max-width:640px">
+  <h1>{{ title }}</h1>
+  <p class="muted">Saving re-checks every logged trip for this platform and service.</p>
+  <form method="post" novalidate>
+    {% csrf_token %}
+    {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+    {% for field in form %}{% include "partials/field.html" %}{% endfor %}
+    <div class="actions">
+      <button class="btn" type="submit">Save rate</button>
+      <a class="btn btn-outline" href="{% url 'adminpanel:rates' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
