@@ -4,6 +4,7 @@
     <a href="{% url 'adminpanel:users' %}">Users</a>
   {% else %}
     <a href="{% url 'dashboard:rider' %}">Dashboard</a>
+    <a href="{% url 'trips:list' %}">My trips</a>
   {% endif %}
   <a href="{% url 'accounts:profile' %}"><img class="avatar-sm" src="{{ user.photo_url }}" alt=""> Profile</a>
   <span class="role-badge">{{ user.get_role_display }}</span>

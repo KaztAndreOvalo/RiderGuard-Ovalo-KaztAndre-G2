@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}My trips{% endblock %}
+{% block content %}
+<div class="page-head">
+  <div>
+    <h1>My trips</h1>
+    <p class="muted">{{ page.paginator.count }} trip{{ page.paginator.count|pluralize }} logged</p>
+  </div>
+  <a class="btn btn-amber" href="{% url 'trips:create' %}">+ Log a trip</a>
+</div>
+
+<div class="card">
+  <form method="get" class="toolbar">
+    {{ filter_form.platform }}
+    {{ filter_form.service_type }}
+    {% block extra_filters %}{% endblock %}
+    <label class="muted" for="{{ filter_form.date_from.id_for_label }}">From</label> {{ filter_form.date_from }}
+    <label class="muted" for="{{ filter_form.date_to.id_for_label }}">To</label> {{ filter_form.date_to }}
+    <button class="btn" type="submit">Filter</button>
+    {% if request.GET %}<a class="btn btn-outline" href="{% url 'trips:list' %}">Clear</a>{% endif %}
+  </form>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Date</th><th>Platform</th><th>Route</th><th>Gross</th><th>Commission</th><th>Net received</th>{% block status_head %}{% endblock %}<th></th></tr>
+      </thead>
+      <tbody>
+        {% for trip in page %}
+          <tr>
+            <td>{{ trip.trip_date|date:"M d, Y" }}</td>
+            <td>{{ trip.platform }}<br><span class="muted">{{ trip.get_service_type_display }}</span></td>
+            <td>{{ trip.pickup_location }} &rarr; {{ trip.dropoff_location }}</td>
+            <td>₱{{ trip.gross_fare }}</td>
+            <td>₱{{ trip.commission_deducted }}<br><span class="muted">{{ trip.commission_percent_charged }}%</span></td>
+            <td>₱{{ trip.net_received }}</td>
+            {% block status_cell %}{% endblock %}
+            <td><a class="btn btn-sm btn-outline" href="{% url 'trips:detail' trip.pk %}">View</a></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="8" class="muted">No trips yet. <a href="{% url 'trips:create' %}">Log your first trip</a>.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.has_other_pages %}
+    <div class="toolbar mt">
+      {% if page.has_previous %}<a class="btn btn-sm btn-outline" href="?{{ querystring }}&page={{ page.previous_page_number }}">&larr; Previous</a>{% endif %}
+      <span class="muted">Page {{ page.number }} of {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}<a class="btn btn-sm btn-outline" href="?{{ querystring }}&page={{ page.next_page_number }}">Next &rarr;</a>{% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}
