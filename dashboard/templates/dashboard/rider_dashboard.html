@@ -21,13 +21,26 @@
   {% endfor %}
 </section>
 
-{% block flagged_section %}{% endblock %}
+<section class="card mt">
+  <div class="page-head"><h2 style="margin:0">Flagged fares</h2>{% if flagged_count %}<a href="{% url 'trips:list' %}?status=FLAGGED">View all {{ flagged_count }} &rarr;</a>{% endif %}</div>
+  {% for trip in flagged_trips %}
+    <div class="flag-row">
+      <div>
+        <strong>{{ trip.platform }} &middot; {{ trip.trip_date|date:"M d" }}</strong> &middot; {{ trip.pickup_location }} &rarr; {{ trip.dropoff_location }}
+        <div class="muted">{{ trip.flag_reason_list|first }}</div>
+      </div>
+      <a class="btn btn-sm btn-outline" href="{% url 'trips:detail' trip.pk %}">Review</a>
+    </div>
+  {% empty %}
+    <p class="muted">No flagged fares. Every trip you've logged matches the reference commission rates.</p>
+  {% endfor %}
+</section>
 
 <section class="card mt">
   <div class="page-head"><h2 style="margin:0">Recent trips</h2><a href="{% url 'trips:list' %}">View all &rarr;</a></div>
   <div class="table-wrap">
     <table>
-      <thead><tr><th>Date</th><th>Platform</th><th>Route</th><th>Gross</th><th>Net received</th><th></th></tr></thead>
+      <thead><tr><th>Date</th><th>Platform</th><th>Route</th><th>Gross</th><th>Net received</th><th>Fare check</th><th></th></tr></thead>
       <tbody>
         {% for trip in recent_trips %}
           <tr>
@@ -36,10 +49,11 @@
             <td>{{ trip.pickup_location }} &rarr; {{ trip.dropoff_location }}</td>
             <td>₱{{ trip.gross_fare }}</td>
             <td>₱{{ trip.net_received }}</td>
+            <td>{% include "trips/partials/status_pill.html" %}</td>
             <td><a class="btn btn-sm btn-outline" href="{% url 'trips:detail' trip.pk %}">View</a></td>
           </tr>
         {% empty %}
-          <tr><td colspan="6" class="muted">No trips yet. <a href="{% url 'trips:create' %}">Log your first trip</a> after your next ride.</td></tr>
+          <tr><td colspan="7" class="muted">No trips yet. <a href="{% url 'trips:create' %}">Log your first trip</a> after your next ride.</td></tr>
         {% endfor %}
       </tbody>
     </table>

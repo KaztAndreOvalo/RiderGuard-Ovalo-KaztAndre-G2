@@ -13,7 +13,7 @@
   <form method="get" class="toolbar">
     {{ filter_form.platform }}
     {{ filter_form.service_type }}
-    {% block extra_filters %}{% endblock %}
+    {{ filter_form.status }}
     <label class="muted" for="{{ filter_form.date_from.id_for_label }}">From</label> {{ filter_form.date_from }}
     <label class="muted" for="{{ filter_form.date_to.id_for_label }}">To</label> {{ filter_form.date_to }}
     <button class="btn" type="submit">Filter</button>
@@ -23,7 +23,7 @@
   <div class="table-wrap">
     <table>
       <thead>
-        <tr><th>Date</th><th>Platform</th><th>Route</th><th>Gross</th><th>Commission</th><th>Net received</th>{% block status_head %}{% endblock %}<th></th></tr>
+        <tr><th>Date</th><th>Platform</th><th>Route</th><th>Gross</th><th>Commission</th><th>Net received</th><th>Fare check</th><th></th></tr>
       </thead>
       <tbody>
         {% for trip in page %}
@@ -34,7 +34,7 @@
             <td>₱{{ trip.gross_fare }}</td>
             <td>₱{{ trip.commission_deducted }}<br><span class="muted">{{ trip.commission_percent_charged }}%</span></td>
             <td>₱{{ trip.net_received }}</td>
-            {% block status_cell %}{% endblock %}
+            <td>{% include "trips/partials/status_pill.html" %}</td>
             <td><a class="btn btn-sm btn-outline" href="{% url 'trips:detail' trip.pk %}">View</a></td>
           </tr>
         {% empty %}

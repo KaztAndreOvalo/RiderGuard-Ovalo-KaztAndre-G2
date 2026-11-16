@@ -89,15 +89,48 @@ class Trip(models.Model):
     receipt_photo = models.ImageField(upload_to="trip_receipts/%Y/%m/", blank=True)
     notes = models.TextField(blank=True)
 
+    # --- Fare Checker results (filled in automatically on save) ---
+    class CheckStatus(models.TextChoices):
+        OK = "OK", "Fare OK"
+        FLAGGED = "FLAGGED", "Flagged"
+        NO_RATE = "NO_RATE", "No reference rate"
+
+    applied_rate = models.ForeignKey(
+        CommissionRate, on_delete=models.SET_NULL, null=True, blank=True, related_name="checked_trips",
+    )
+    expected_commission = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    commission_overcharge = models.DecimalField(max_digits=9, decimal_places=2, null=True, blank=True)
+    net_shortfall = models.DecimalField(max_digits=9, decimal_places=2, default=Decimal("0.00"))
+    check_status = models.CharField(max_length=10, choices=CheckStatus.choices, default=CheckStatus.NO_RATE)
+    flag_reasons = models.TextField(blank=True)
+    checked_at = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-trip_date", "-created_at"]
-        indexes = [models.Index(fields=["rider", "-trip_date"])]
+        indexes = [
+            models.Index(fields=["rider", "-trip_date"]),
+            models.Index(fields=["check_status"]),
+        ]
 
     def __str__(self):
         return f"{self.platform} trip on {self.trip_date} ({self.rider})"
+
+    def save(self, *args, **kwargs):
+        from .fare_check import run_fare_check
+
+        run_fare_check(self)
+        super().save(*args, **kwargs)
+
+    @property
+    def is_flagged(self):
+        return self.check_status == self.CheckStatus.FLAGGED
+
+    @property
+    def flag_reason_list(self):
+        return [r for r in self.flag_reasons.splitlines() if r.strip()]
 
     @property
     def total_deductions(self):
